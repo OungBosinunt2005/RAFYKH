@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>VELOR | Modern Luxury Apparel</title>
+    <!-- Tailwind CSS + Google Fonts + Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      * {
+        font-family: "Inter", sans-serif;
+      }
+      body {
+        background-color: #faf9f8;
+        scroll-behavior: smooth;
+      }
+      /* Custom range slider styling - premium & smooth */
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+      }
+      input[type="range"]:focus {
+        outline: none;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        transition: background 0.2s;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        background: #1e293b;
+        margin-top: -7px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.25);
+        background: #0f172a;
+      }
+      /* Floating label simulation */
+      .input-group {
+        position: relative;
+        margin-top: 1.25rem;
+      }
+      .input-group input,
+      .input-group textarea {
+        width: 100%;
+        padding: 1rem 0.75rem 0.5rem 0.75rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
+        background: white;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+      }
+      .input-group label {
+        position: absolute;
+        left: 0.75rem;
+        top: 1rem;
+        font-size: 0.9rem;
+        color: #64748b;
+        transition: all 0.2s;
+        pointer-events: none;
+        background: white;
+        padding: 0 0.25rem;
+      }
+      .input-group input:focus,
+      .input-group textarea:focus {
+        border-color: #1e293b;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(30, 41, 59, 0.1);
+      }
+      .input-group input:focus + label,
+      .input-group input:not(:placeholder-shown) + label,
+      .input-group textarea:focus + label,
+      .input-group textarea:not(:placeholder-shown) + label {
+        top: -0.6rem;
+        font-size: 0.7rem;
+        color: #1e293b;
+        font-weight: 500;
+      }
+      .cart-drawer-open {
+        overflow: hidden;
+      }
+      .fade-up {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+          opacity 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1),
+          transform 0.7s ease;
+      }
+      .fade-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .product-card {
+        transition: all 0.35s ease;
+      }
+      .glass-nav {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      /* Marquee animation for client feed */
+      @keyframes marquee {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+      .marquee-track {
+        animation: marquee 28s linear infinite;
+        width: fit-content;
+        display: flex;
+      }
+      .marquee-container:hover .marquee-track {
+        animation-play-state: paused;
+      }
+      /* Price filter smooth value display */
+      .price-range-value {
+        transition: all 0.15s ease;
+      }
+      /* Category filter active state */
+      .filter-chip-active {
+        background-color: #1e293b !important;
+        color: white !important;
+        border-color: #1e293b !important;
+      }
+      /* Modal transitions */
+      .modal-enter {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      .modal-enter-active {
+        opacity: 1;
+        transform: scale(1);
+        transition: all 0.2s ease-out;
+      }
+      .modal-exit {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <!-- ============================ GLOBAL CART DRAWER HTML ============================ -->
+    <div
+      id="cartDrawerOverlay"
+      class="fixed inset-0 bg-black/40 z-40 invisible opacity-0 transition-all duration-300"
+    ></div>
+    <div
+      id="cartDrawer"
+      class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-400 ease-out flex flex-col"
+    >
+      <div
+        class="flex justify-between items-center p-6 border-b border-gray-100"
+      >
+        <h2 class="text-xl font-semibold tracking-tight">
+          Shopping Cart
+          <span
+            id="cartCountBadgeDrawer"
+            class="text-sm font-normal text-gray-500"
+            >(0)</span
+          >
+        </h2>
+        <button
+          id="closeCartBtn"
+          class="text-gray-400 hover:text-gray-800 text-xl transition"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div
+        id="cartItemsContainer"
+        class="flex-1 overflow-y-auto p-5 space-y-5"
+      ></div>
+      <div class="border-t border-gray-100 p-6 bg-white">
+        <div class="flex justify-between mb-4 text-lg font-medium">
+          <span>Subtotal</span><span id="cartSubtotal">$0.00</span>
+        </div>
+        <button
+          id="checkoutBtn"
+          class="w-full bg-black text-white py-3 rounded-full font-medium tracking-wide hover:bg-gray-800 transition shadow-md"
+        >
+          Proceed to Checkout
+        </button>
+        <p class="text-xs text-gray-400 text-center mt-3">
+          Shipping & taxes calculated at checkout
+        </p>
+      </div>
+    </div>
+
+    <!-- ============================ LOGIN / SIGNUP MODAL ============================ -->
+    <div
+      id="authModal"
+      class="fixed inset-0 z-50 flex items-center justify-center px-4 opacity-0 invisible transition-all duration-300"
+    >
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        id="authModalBackdrop"
+      ></div>
+      <div
+        class="relative bg-white rounded-2xl max-w-md w-full shadow-2xl transform transition-all duration-300 scale-95"
+      >
+        <div
+          class="p-6 border-b border-gray-100 flex justify-between items-center"
+        >
+          <h3 id="authModalTitle" class="text-2xl font-semibold tracking-tight">
+            Welcome Back
+          </h3>
+          <button
+            id="closeAuthModal"
+            class="text-gray-400 hover:text-gray-800 text-xl"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="p-6">
+          <div
+            id="authToggleBtns"
+            class="flex gap-3 mb-6 bg-gray-100 p-1 rounded-full"
+          >
+            <button
+              id="loginTabBtn"
+              class="flex-1 py-2 rounded-full text-sm font-medium transition-all bg-black text-white shadow-sm"
+            >
+              Login
+            </button>
+            <button
+              id="signupTabBtn"
+              class="flex-1 py-2 rounded-full text-sm font-medium transition-all text-gray-600 hover:text-black"
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <!-- Login Form -->
+          <div id="loginFormContainer">
+            <div class="space-y-4">
+              <div class="input-group">
+                <input
+                  type="email"
+                  id="loginEmail"
+                  placeholder=" "
+                  autocomplete="email"
+                />
+                <label>Email address</label>
+                <div
+                  id="loginEmailError"
+                  class="text-xs text-red-500 hidden mt-1"
+                ></div>
+              </div>
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="loginPassword"
+                  placeholder=" "
+                  autocomplete="current-password"
+                />
+                <label>Password</label>
+                <div
+                  id="loginPasswordError"
+                  class="text-xs text-red-500 hidden mt-1"
+                ></div>
+              </div>
+              <button
+                id="submitLoginBtn"
+                class="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition mt-4"
+              >
+                Login
+              </button>
+              <p class="text-center text-xs text-gray-400 mt-3">
+                Demo: any email / password "demo123"
+              </p>
+            </div>
+          </div>
+
+          <!-- Signup Form (initially hidden) -->
+          <div id="signupFormContainer" class="hidden">
+            <div class="space-y-4">
+              <div class="input-group">
+                <input type="text" id="signupName" placeholder=" " />
+                <label>Full name</label>
+                <div
+                  id="signupNameError"
+                  class="text-xs text-red-500 hidden mt-1"
+                ></div>
+              </div>
+              <div class="input-group">
+                <input
+                  type="email"
+                  id="signupEmail"
+                  placeholder=" "
+                  autocomplete="email"
+                />
+                <label>Email address</label>
+                <div
+                  id="signupEmailError"
+                  class="text-xs text-red-500 hidden mt-1"
+                ></div>
+              </div>
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="signupPassword"
+                  placeholder=" "
+                  autocomplete="new-password"
+                />
+                <label>Password (min 4 characters)</label>
+                <div
+                  id="signupPasswordError"
+                  class="text-xs text-red-500 hidden mt-1"
+                ></div>
+              </div>
+              <button
+                id="submitSignupBtn"
+                class="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+
+          <div id="authGlobalMsg" class="text-center text-sm mt-4 hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================ GLOBAL NAVIGATION ============================ -->
+    <header
+      id="mainHeader"
+      class="sticky top-0 z-40 glass-nav transition-all duration-300"
+    >
+      <div
+        class="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center"
+      >
+        <div class="text-2xl font-bold tracking-tighter">
+          <span class="text-black">RAFY</span
+          ><span class="text-gray-400 font-light">KH</span>
+        </div>
+        <nav class="hidden md:flex space-x-9 text-sm font-medium">
+          <a href="#" data-page="home" class="nav-link relative pb-1">Home</a>
+          <a href="#" data-page="shop" class="nav-link relative pb-1">Shop</a>
+          <a href="#" data-page="about" class="nav-link relative pb-1">About</a>
+          <a href="#" data-page="contact" class="nav-link relative pb-1"
+            >Contact</a
+          >
+        </nav>
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <button
+              id="userAvatarBtn"
+              class="text-gray-700 hover:text-black text-lg transition flex items-center gap-1"
+            >
+              <i class="fas fa-user-circle text-xl"></i>
+              <span
+                id="userDisplayName"
+                class="text-sm font-medium hidden md:inline"
+                >Account</span
+              >
+            </button>
+            <div
+              id="userDropdown"
+              class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50"
+            >
+              <div class="py-1">
+                <div
+                  class="px-4 py-2 text-sm text-gray-500 border-b"
+                  id="userEmailPreview"
+                >
+                  guest@velor.com
+                </div>
+                <button
+                  id="logoutBtn"
+                  class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+          <button
+            id="cartIconBtn"
+            class="relative text-gray-700 hover:text-black text-lg transition"
+          >
+            <i class="fas fa-bag-shopping"></i>
+            <span
+              id="cartBadge"
+              class="absolute -top-2 -right-3 bg-black text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
+              >0</span
+            >
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="appRoot" class="min-h-screen"></main>
+
+    <!-- ============================ FOOTER (GLOBAL) ============================ -->
+    <footer class="bg-white border-t border-gray-100 mt-20 py-12">
+      <div
+        class="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10"
+      >
+        <div>
+          <h3 class="font-bold text-lg">VELOR</h3>
+          <p class="text-gray-500 text-sm mt-2">
+            Luxury minimalism for the modern voyager.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-semibold">Shop</h4>
+          <ul class="mt-2 space-y-1 text-gray-500 text-sm">
+            <li>New Arrivals</li>
+            <li>Essentials</li>
+            <li>Outerwear</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold">Support</h4>
+          <ul class="mt-2 space-y-1 text-gray-500 text-sm">
+            <li>FAQ</li>
+            <li>Returns</li>
+            <li>Contact</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold">Newsletter</h4>
+          <div class="flex mt-2">
+            <input
+              type="email"
+              placeholder="Your email"
+              id="newsEmail"
+              class="flex-1 border border-gray-200 rounded-l-full px-4 py-2 text-sm"
+            /><button
+              id="newsBtn"
+              class="bg-black text-white px-4 rounded-r-full text-sm"
+            >
+              →
+            </button>
+          </div>
+          <p id="newsMsg" class="text-xs text-green-600 mt-1 hidden"></p>
+        </div>
+      </div>
+      <div class="text-center text-gray-400 text-xs mt-10">
+        © 2025 VELOR — Effortless luxury
+      </div>
+    </footer>
+
+    <script>
+      // ---------- PRODUCT DATA ----------
+      const products = [
+        {
+          id: 1,
+          name: "Merino Overshirt",
+          price: 189,
+          category: "Shirts",
+          image:
+            "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=500&fit=crop",
+          type: "shirt",
+        },
+        {
+          id: 2,
+          name: "Cargo Trousers",
+          price: 249,
+          category: "Bottoms",
+          image:
+            "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop",
+          type: "pants",
+        },
+        {
+          id: 3,
+          name: "Alpaca Knit",
+          price: 299,
+          category: "Knitwear",
+          image:
+            "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=500&fit=crop",
+          type: "knit",
+        },
+        {
+          id: 4,
+          name: "Leather Belt",
+          price: 89,
+          category: "Accessories",
+          image:
+            "https://images.unsplash.com/photo-1624222247344-550fb6e73a6b?w=400&h=500&fit=crop",
+          type: "accessory",
+        },
+        {
+          id: 5,
+          name: "Linen Blazer",
+          price: 359,
+          category: "Blazers",
+          image:
+            "https://images.unsplash.com/photo-1592878904946-b3cd8ae243d0?w=400&h=500&fit=crop",
+          type: "blazer",
+        },
+        {
+          id: 6,
+          name: "Selvedge Denim",
+          price: 279,
+          category: "Denim",
+          image:
+            "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=500&fit=crop",
+          type: "jeans",
+        },
+        {
+          id: 7,
+          name: "Silk Scarf",
+          price: 129,
+          category: "Accessories",
+          image:
+            "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400&h=500&fit=crop",
+          type: "accessory",
+        },
+        {
+          id: 8,
+          name: "Cashmere Sweater",
+          price: 399,
+          category: "Knitwear",
+          image:
+            "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400&h=500&fit=crop",
+          type: "knit",
+        },
+      ];
+      const allCategories = [...new Set(products.map((p) => p.category))];
+      const clientFeed = [
+        {
+          name: "Sophia Chen",
+          role: "Style Editor",
+          text: "The knitwear is absolutely divine — soft and sculptural.",
+          rating: 5,
+        },
+        {
+          name: "Marcus LeBlanc",
+          role: "Creative Director",
+          text: "Minimalism done right. VELOR sets new standards.",
+          rating: 5,
+        },
+        {
+          name: "Elena Rossi",
+          role: "Fashion Consultant",
+          text: "My go-to for timeless staples. Flawless quality.",
+          rating: 5,
+        },
+        {
+          name: "David Kim",
+          role: "Architect",
+          text: "Effortless elegance that translates from studio to soirée.",
+          rating: 5,
+        },
+        {
+          name: "Olivia West",
+          role: "Luxury Buyer",
+          text: "Sustainable luxury at its finest. Obsessed with the linen blazer.",
+          rating: 5,
+        },
+      ];
+
+      // Auth state management
+      let currentUser = JSON.parse(
+        localStorage.getItem("velor_user") || "null",
+      );
+      let cart = JSON.parse(localStorage.getItem("velor_cart") || "[]");
+      let currentPage = "home";
+      let pendingCheckoutAction = false;
+
+      // DOM elements
+      const app = document.getElementById("appRoot");
+      const cartBadge = document.getElementById("cartBadge");
+      const cartDrawer = document.getElementById("cartDrawer");
+      const overlay = document.getElementById("cartDrawerOverlay");
+      const closeCartBtn = document.getElementById("closeCartBtn");
+      const cartIconBtn = document.getElementById("cartIconBtn");
+      const checkoutBtn = document.getElementById("checkoutBtn");
+      const authModal = document.getElementById("authModal");
+      const closeAuthModalBtn = document.getElementById("closeAuthModal");
+      const authModalBackdrop = document.getElementById("authModalBackdrop");
+      const userAvatarBtn = document.getElementById("userAvatarBtn");
+      const userDropdown = document.getElementById("userDropdown");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userDisplayNameSpan = document.getElementById("userDisplayName");
+      const userEmailPreview = document.getElementById("userEmailPreview");
+
+      // Helper: update auth UI
+      function updateAuthUI() {
+        if (currentUser) {
+          userDisplayNameSpan.innerText =
+            currentUser.name?.split(" ")[0] || "Hi";
+          if (userEmailPreview) userEmailPreview.innerText = currentUser.email;
+          userDisplayNameSpan.classList.remove("hidden");
+          userDisplayNameSpan.classList.add("inline");
+        } else {
+          userDisplayNameSpan.innerText = "Account";
+          if (userEmailPreview) userEmailPreview.innerText = "guest@velor.com";
+        }
+      }
+
+      function saveUserToLocal() {
+        if (currentUser)
+          localStorage.setItem("velor_user", JSON.stringify(currentUser));
+        else localStorage.removeItem("velor_user");
+        updateAuthUI();
+      }
+
+      function showAuthModal() {
+        authModal.classList.remove("invisible", "opacity-0");
+        authModal.classList.add("opacity-100", "visible");
+        document.body.classList.add("cart-drawer-open");
+        // Reset forms
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("signupName").value = "";
+        document.getElementById("signupEmail").value = "";
+        document.getElementById("signupPassword").value = "";
+        document.getElementById("authGlobalMsg").classList.add("hidden");
+        // Default to login tab
+        setActiveAuthTab("login");
+      }
+
+      function hideAuthModal() {
+        authModal.classList.remove("opacity-100", "visible");
+        authModal.classList.add("invisible", "opacity-0");
+        document.body.classList.remove("cart-drawer-open");
+        if (pendingCheckoutAction && currentUser) {
+          pendingCheckoutAction = false;
+          proceedToCheckout();
+        }
+      }
+
+      function setActiveAuthTab(tab) {
+        const loginTab = document.getElementById("loginTabBtn");
+        const signupTab = document.getElementById("signupTabBtn");
+        const loginContainer = document.getElementById("loginFormContainer");
+        const signupContainer = document.getElementById("signupFormContainer");
+        if (tab === "login") {
+          loginTab.classList.add("bg-black", "text-white", "shadow-sm");
+          loginTab.classList.remove("text-gray-600");
+          signupTab.classList.remove("bg-black", "text-white", "shadow-sm");
+          signupTab.classList.add("text-gray-600");
+          loginContainer.classList.remove("hidden");
+          signupContainer.classList.add("hidden");
+        } else {
+          signupTab.classList.add("bg-black", "text-white", "shadow-sm");
+          signupTab.classList.remove("text-gray-600");
+          loginTab.classList.remove("bg-black", "text-white", "shadow-sm");
+          loginTab.classList.add("text-gray-600");
+          loginContainer.classList.add("hidden");
+          signupContainer.classList.remove("hidden");
+        }
+      }
+
+      function handleLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+        let valid = true;
+        if (!email) {
+          showLoginError("loginEmailError", "Email required");
+          valid = false;
+        } else hideLoginError("loginEmailError");
+        if (!password) {
+          showLoginError("loginPasswordError", "Password required");
+          valid = false;
+        } else if (password !== "demo123") {
+          showLoginError(
+            "loginPasswordError",
+            "Invalid password (use 'demo123')",
+          );
+          valid = false;
+        } else hideLoginError("loginPasswordError");
+        if (!valid) return;
+        // Successful login (demo)
+        currentUser = {
+          email: email,
+          name: email.split("@")[0] || "Member",
+          id: Date.now(),
+        };
+        saveUserToLocal();
+        hideAuthModal();
+        // re-render current page to update any add-to-cart state
+        if (currentPage === "shop") renderShopPage();
+        else if (currentPage === "home") renderHomePage();
+        updateCartUI();
+        if (pendingCheckoutAction) {
+          pendingCheckoutAction = false;
+          proceedToCheckout();
+        }
+      }
+
+      function handleSignup() {
+        const name = document.getElementById("signupName").value.trim();
+        const email = document.getElementById("signupEmail").value.trim();
+        const password = document.getElementById("signupPassword").value.trim();
+        let valid = true;
+        if (!name) {
+          showSignupError("signupNameError", "Full name required");
+          valid = false;
+        } else hideSignupError("signupNameError");
+        if (!email || !email.includes("@")) {
+          showSignupError("signupEmailError", "Valid email required");
+          valid = false;
+        } else hideSignupError("signupEmailError");
+        if (!password || password.length < 4) {
+          showSignupError("signupPasswordError", "Password min 4 characters");
+          valid = false;
+        } else hideSignupError("signupPasswordError");
+        if (!valid) return;
+        currentUser = { email: email, name: name, id: Date.now() };
+        saveUserToLocal();
+        hideAuthModal();
+        if (currentPage === "shop") renderShopPage();
+        else if (currentPage === "home") renderHomePage();
+        updateCartUI();
+        if (pendingCheckoutAction) {
+          pendingCheckoutAction = false;
+          proceedToCheckout();
+        }
+      }
+
+      function showLoginError(id, msg) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerText = msg;
+          el.classList.remove("hidden");
+        }
+      }
+      function hideLoginError(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
+      }
+      function showSignupError(id, msg) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerText = msg;
+          el.classList.remove("hidden");
+        }
+      }
+      function hideSignupError(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
+      }
+
+      function logout() {
+        currentUser = null;
+        localStorage.removeItem("velor_user");
+        saveUserToLocal();
+        userDropdown.classList.add("hidden");
+        if (currentPage === "shop") renderShopPage();
+        else if (currentPage === "home") renderHomePage();
+        updateCartUI();
+      }
+
+      function proceedToCheckout() {
+        if (!currentUser) {
+          pendingCheckoutAction = true;
+          showAuthModal();
+          return;
+        }
+        const total = cart
+          .reduce((sum, i) => sum + i.price * i.quantity, 0)
+          .toFixed(2);
+        alert(
+          `✅ Checkout complete, ${currentUser.name}! Total: $${total}. Thank you for shopping at VELOR.`,
+        );
+        // optional: clear cart after checkout demo
+        // cart = []; saveCart(); closeCartDrawer();
+      }
+
+      // Cart helpers
+      function updateCartUI() {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartBadge.innerText = totalItems;
+        const drawerBadge = document.getElementById("cartCountBadgeDrawer");
+        if (drawerBadge) drawerBadge.innerText = `(${totalItems})`;
+        if (currentPage === "shop") renderShopPage();
+        renderCartDrawerItems();
+      }
+      function saveCart() {
+        localStorage.setItem("velor_cart", JSON.stringify(cart));
+        updateCartUI();
+      }
+      function addToCart(productId) {
+        if (!currentUser) {
+          pendingCheckoutAction = false;
+          showAuthModal();
+          return;
+        }
+        const product = products.find((p) => p.id === productId);
+        if (!product) return;
+        const existing = cart.find((item) => item.id === productId);
+        if (existing) existing.quantity += 1;
+        else cart.push({ ...product, quantity: 1 });
+        saveCart();
+        openCartDrawer();
+        animateCartBadge();
+      }
+      function updateQuantity(itemId, delta) {
+        const idx = cart.findIndex((i) => i.id === itemId);
+        if (idx !== -1) {
+          const newQty = cart[idx].quantity + delta;
+          if (newQty <= 0) cart.splice(idx, 1);
+          else cart[idx].quantity = newQty;
+          saveCart();
+          renderCartDrawerItems();
+          if (currentPage === "shop") renderShopPage();
+        }
+      }
+      function animateCartBadge() {
+        cartBadge.style.transform = "scale(1.2)";
+        setTimeout(() => (cartBadge.style.transform = ""), 200);
+      }
+      function openCartDrawer() {
+        cartDrawer.classList.remove("translate-x-full");
+        overlay.classList.remove("invisible", "opacity-0");
+        overlay.classList.add("opacity-100", "visible");
+        document.body.classList.add("cart-drawer-open");
+      }
+      function closeCartDrawer() {
+        cartDrawer.classList.add("translate-x-full");
+        overlay.classList.add("invisible", "opacity-0");
+        overlay.classList.remove("opacity-100", "visible");
+        document.body.classList.remove("cart-drawer-open");
+      }
+      function renderCartDrawerItems() {
+        const container = document.getElementById("cartItemsContainer");
+        if (!container) return;
+        if (cart.length === 0) {
+          container.innerHTML = `<div class="text-center text-gray-400 mt-10">Your cart is empty.<br>Add something luxurious.</div>`;
+          document.getElementById("cartSubtotal").innerText = "$0.00";
+          return;
+        }
+        let subtotal = 0;
+        let html = "";
+        cart.forEach((item) => {
+          subtotal += item.price * item.quantity;
+          html += `<div class="flex gap-4 border-b pb-4"><img src="${item.image}" class="w-20 h-24 object-cover rounded-md" /><div class="flex-1"><p class="font-medium">${item.name}</p><p class="text-sm text-gray-500">$${item.price}</p><div class="flex items-center gap-3 mt-2"><button class="cart-qty-minus w-6 h-6 border rounded-full hover:bg-gray-100 transition" data-id="${item.id}">-</button><span class="text-sm w-6 text-center">${item.quantity}</span><button class="cart-qty-plus w-6 h-6 border rounded-full hover:bg-gray-100 transition" data-id="${item.id}">+</button></div></div><span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span></div>`;
+        });
+        container.innerHTML = html;
+        document.getElementById("cartSubtotal").innerText =
+          `$${subtotal.toFixed(2)}`;
+        document.querySelectorAll(".cart-qty-minus").forEach((btn) =>
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(btn.dataset.id);
+            updateQuantity(id, -1);
+          }),
+        );
+        document.querySelectorAll(".cart-qty-plus").forEach((btn) =>
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(btn.dataset.id);
+            updateQuantity(id, 1);
+          }),
+        );
+      }
+
+      // Observer and Marquee
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) entry.target.classList.add("visible");
+          });
+        },
+        { threshold: 0.1 },
+      );
+      function renderMarqueeFeed() {
+        const items = [...clientFeed, ...clientFeed];
+        return `<div class="marquee-container w-full overflow-hidden py-8 relative"><div class="marquee-track flex gap-8">${items.map((client) => `<div class="flex-shrink-0 w-80 bg-white/60 backdrop-blur-sm rounded-2xl p-5 shadow-sm border border-gray-100"><div class="flex items-center gap-1 text-yellow-500 text-sm mb-2">${"★".repeat(client.rating)}</div><p class="text-gray-700 text-sm italic">“${client.text}”</p><div class="mt-3"><p class="font-semibold text-sm">${client.name}</p><p class="text-xs text-gray-400">${client.role}</p></div></div>`).join("")}</div></div>`;
+      }
+
+      // Page renders (simplified home and shop, but shop includes full filter logic)
+      async function renderHomePage() {
+        /* same as original but attachPageLinks called later */ app.innerHTML = `<section class="relative h-screen max-h-[750px] bg-cover bg-center flex items-center" style="background-image: linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.05)), url('https://images.unsplash.com/photo-1445205170230-053b83016050?w=1600&h=800&fit=crop');"><div class="max-w-7xl mx-auto px-6 text-white"><div class="fade-up"><h1 class="text-5xl md:text-7xl font-bold tracking-tight">Effortless <br>Elegance</h1><p class="text-lg mt-4 max-w-lg text-white/90">Modern silhouettes, timeless fabrics.</p><a href="#" data-page="shop" class="inline-block mt-8 bg-white text-black px-8 py-3 rounded-full font-medium hover:bg-gray-100 transition">Shop Now</a></div></div></section><div class="w-full py-8 bg-transparent"><div class="max-w-7xl mx-auto px-6 mb-2"><span class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Voices of VELOR</span><h2 class="text-2xl font-light mt-1">Loved by creatives worldwide</h2></div><div id="marqueeRoot" class="mt-2"></div></div><div class="max-w-7xl mx-auto px-6 lg:px-8 py-20"><div class="fade-up text-center"><span class="text-sm uppercase tracking-wider text-gray-500">Curated Selections</span><h2 class="text-3xl font-semibold mt-2">Trending Collections</h2></div><div class="grid md:grid-cols-3 gap-8 mt-12">${products
+          .slice(0, 3)
+          .map(
+            (p) =>
+              `<div class="fade-up group relative rounded-2xl overflow-hidden shadow-sm"><img src="${p.image}" class="w-full h-80 object-cover transition duration-500 group-hover:scale-105"><div class="absolute inset-0 bg-black/20 flex items-end p-5"><div><p class="text-white font-semibold">${p.name}</p><p class="text-white/80">$${p.price}</p></div></div></div>`,
+          )
+          .join(
+            "",
+          )}</div></div><div class="bg-gray-50 py-16"><div class="max-w-7xl mx-auto px-6"><div class="fade-up text-center"><i class="fas fa-quote-left text-3xl text-gray-300"></i><p class="text-xl italic max-w-2xl mx-auto mt-4 text-gray-700">"The most comfortable and refined fabric I’ve ever owned."</p><p class="mt-4 font-medium">— James K., Creative Director</p></div></div></div>`;
+        document.getElementById("marqueeRoot").innerHTML = renderMarqueeFeed();
+        attachPageLinks();
+        document
+          .querySelectorAll(".fade-up")
+          .forEach((el) => observer.observe(el));
+      }
+
+      let currentFilters = { search: "", category: "", maxPrice: 500 };
+      function renderShopPage() {
+        let filtered = products.filter((p) => {
+          if (
+            currentFilters.search &&
+            !p.name.toLowerCase().includes(currentFilters.search.toLowerCase())
+          )
+            return false;
+          if (currentFilters.category && p.category !== currentFilters.category)
+            return false;
+          if (p.price > currentFilters.maxPrice) return false;
+          return true;
+        });
+        const noResults = filtered.length === 0;
+        const categoryChipsHtml = allCategories
+          .map(
+            (cat) =>
+              `<button class="filter-category-chip px-4 py-1.5 rounded-full border text-sm transition-all duration-200 ${currentFilters.category === cat ? "filter-chip-active bg-black text-white border-black" : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"}" data-category="${cat}">${cat}</button>`,
+          )
+          .join("");
+        app.innerHTML = `<div class="max-w-7xl mx-auto px-6 lg:px-8 py-10"><div class="mb-8 border-b border-gray-100 pb-6"><div class="flex flex-wrap items-center gap-3"><button class="filter-category-chip px-4 py-1.5 rounded-full border text-sm transition-all duration-200 ${currentFilters.category === "" ? "filter-chip-active bg-black text-white border-black" : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"}" data-category="">All</button>${categoryChipsHtml}</div></div><div class="flex flex-wrap gap-8"><div class="w-full md:w-72 shrink-0"><div class="sticky top-28 bg-white p-5 rounded-2xl shadow-sm border"><h3 class="font-bold text-lg">Refine</h3><div class="mt-4"><label class="text-sm font-medium block mb-1">Search</label><input type="text" id="filterSearch" placeholder="Search product..." class="border w-full rounded-lg p-2 text-sm focus:ring-1 focus:ring-black"></div><div class="mt-5"><div class="flex justify-between text-sm font-medium mb-2"><span>Max Price</span><span id="priceVal" class="price-range-value bg-gray-100 px-2 py-0.5 rounded-full text-xs">$${currentFilters.maxPrice}</span></div><input type="range" id="priceRange" min="0" max="500" step="5" value="${currentFilters.maxPrice}" class="w-full"></div><button id="clearFiltersBtn" class="mt-6 w-full text-sm py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition">Clear All Filters</button></div></div><div class="flex-1"><div class="flex justify-between items-center mb-4"><p class="text-sm text-gray-500">Showing ${filtered.length} of ${products.length} products</p></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7" id="productsGrid">${noResults ? `<div class="col-span-full text-center py-20"><i class="fas fa-tshirt text-4xl text-gray-300"></i><p class="mt-3 text-gray-500">No items found. Try different filters.</p><button id="globalClearFiltersBtn" class="mt-3 bg-black text-white px-5 py-2 rounded-full text-sm hover:bg-gray-800 transition">Clear Filters</button></div>` : filtered.map((p) => `<div class="product-card group bg-white rounded-2xl overflow-hidden shadow-sm relative transition-all duration-300 hover:shadow-xl"><div class="relative overflow-hidden"><img src="${p.image}" class="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-105"><div class="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-black/70 to-transparent pt-8"><button class="addToCartBtn bg-white text-black w-full py-2 rounded-full text-sm font-medium transition hover:bg-gray-100" data-id="${p.id}">Add to Cart</button></div></div><div class="p-4"><div class="flex justify-between items-start"><div><p class="font-medium text-gray-900">${p.name}</p><p class="text-xs text-gray-400 mt-0.5">${p.category}</p></div><p class="font-semibold text-gray-900">$${p.price}</p></div></div></div>`).join("")}</div></div></div></div>`;
+        document.querySelectorAll(".filter-category-chip").forEach((chip) => {
+          chip.addEventListener("click", (e) => {
+            currentFilters.category = chip.getAttribute("data-category") || "";
+            renderShopPage();
+          });
+        });
+        const searchInput = document.getElementById("filterSearch");
+        const priceRange = document.getElementById("priceRange");
+        const priceSpan = document.getElementById("priceVal");
+        const clearBtn = document.getElementById("clearFiltersBtn");
+        const globalClearBtn = document.getElementById("globalClearFiltersBtn");
+        if (searchInput) {
+          searchInput.value = currentFilters.search;
+          searchInput.addEventListener("input", (e) => {
+            currentFilters.search = e.target.value;
+            renderShopPage();
+          });
+        }
+        const updatePrice = (val) => {
+          currentFilters.maxPrice = parseInt(val);
+          if (priceSpan) priceSpan.innerText = `$${currentFilters.maxPrice}`;
+          renderShopPage();
+        };
+        if (priceRange)
+          priceRange.addEventListener("input", (e) =>
+            updatePrice(e.target.value),
+          );
+        if (clearBtn)
+          clearBtn.addEventListener("click", () => {
+            currentFilters = { search: "", category: "", maxPrice: 500 };
+            renderShopPage();
+          });
+        if (globalClearBtn)
+          globalClearBtn.addEventListener("click", () => {
+            currentFilters = { search: "", category: "", maxPrice: 500 };
+            renderShopPage();
+          });
+        document
+          .querySelectorAll(".addToCartBtn")
+          .forEach((btn) =>
+            btn.addEventListener("click", (e) =>
+              addToCart(parseInt(btn.dataset.id)),
+            ),
+          );
+      }
+      function renderAboutPage() {
+        app.innerHTML = `<div class="max-w-7xl mx-auto px-6 py-16"><div class="grid md:grid-cols-2 gap-12 items-center"><div class="fade-up"><h2 class="text-4xl font-bold tracking-tight">Timeless Craft</h2><p class="text-gray-600 mt-4">Founded in 2020, VELOR redefines minimalism with sustainable fabrics and architectural silhouettes.</p><div class="mt-6 space-y-2"><div class="flex gap-3"><i class="fas fa-check-circle text-black"></i><span>100% Organic Materials</span></div><div class="flex gap-3"><i class="fas fa-check-circle text-black"></i><span>Ethical Manufacturing</span></div></div></div><img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&h=500&fit=crop" class="rounded-2xl shadow-xl fade-up"></div></div>`;
+        attachPageLinks();
+        document
+          .querySelectorAll(".fade-up")
+          .forEach((el) => observer.observe(el));
+      }
+      function renderContactPage() {
+        app.innerHTML = `<div class="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-16"><div class="fade-up"><h2 class="text-3xl font-bold">We're here to help</h2><p class="text-gray-500 mt-2">Get in touch for styling advice or support.</p><form id="contactForm" class="mt-8 space-y-4"><div class="input-group"><input type="text" id="cname" placeholder=" "><label>Full name</label></div><div class="input-group"><input type="email" id="cemail" placeholder=" "><label>Email</label></div><div class="input-group"><textarea rows="3" id="cmsg" placeholder=" "></textarea><label>Message</label></div><button type="submit" class="bg-black text-white px-6 py-3 rounded-full w-full transition hover:bg-gray-800">Send Message</button><div id="formSuccess" class="text-green-600 text-sm hidden"></div></form></div><div class="bg-gray-100 rounded-2xl h-80 flex items-center justify-center shadow-inner fade-up"><i class="fas fa-map fa-3x text-gray-400"></i><span class="ml-2 text-gray-500">Map preview — VELOR Atelier</span></div></div>`;
+        const form = document.getElementById("contactForm");
+        if (form)
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            document.getElementById("formSuccess").innerText =
+              "Thank you! We’ll reply soon.";
+            document.getElementById("formSuccess").classList.remove("hidden");
+            form.reset();
+            setTimeout(
+              () =>
+                document.getElementById("formSuccess").classList.add("hidden"),
+              3000,
+            );
+          });
+        attachPageLinks();
+        document
+          .querySelectorAll(".fade-up")
+          .forEach((el) => observer.observe(el));
+      }
+      function attachPageLinks() {
+        document.querySelectorAll("[data-page]").forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const page = link.getAttribute("data-page");
+            if (page) navigateTo(page);
+          });
+        });
+      }
+      function navigateTo(page) {
+        currentPage = page;
+        if (page === "home") renderHomePage();
+        else if (page === "shop") renderShopPage();
+        else if (page === "about") renderAboutPage();
+        else if (page === "contact") renderContactPage();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // Event binding
+      closeCartBtn?.addEventListener("click", closeCartDrawer);
+      overlay?.addEventListener("click", closeCartDrawer);
+      cartIconBtn?.addEventListener("click", openCartDrawer);
+      checkoutBtn?.addEventListener("click", () => proceedToCheckout());
+      document.getElementById("newsBtn")?.addEventListener("click", () => {
+        const inp = document.getElementById("newsEmail");
+        const msgDiv = document.getElementById("newsMsg");
+        if (inp.value.includes("@")) {
+          msgDiv.innerText = "Thanks for subscribing!";
+          msgDiv.classList.remove("hidden");
+          inp.value = "";
+        } else {
+          msgDiv.innerText = "Valid email required";
+          msgDiv.classList.remove("hidden");
+        }
+        setTimeout(() => msgDiv.classList.add("hidden"), 2500);
+      });
+      userAvatarBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        userDropdown.classList.toggle("hidden");
+      });
+      document.addEventListener("click", (e) => {
+        if (!userAvatarBtn?.contains(e.target))
+          userDropdown.classList.add("hidden");
+      });
+      logoutBtn?.addEventListener("click", logout);
+      document
+        .getElementById("loginTabBtn")
+        ?.addEventListener("click", () => setActiveAuthTab("login"));
+      document
+        .getElementById("signupTabBtn")
+        ?.addEventListener("click", () => setActiveAuthTab("signup"));
+      document
+        .getElementById("submitLoginBtn")
+        ?.addEventListener("click", handleLogin);
+      document
+        .getElementById("submitSignupBtn")
+        ?.addEventListener("click", handleSignup);
+      closeAuthModalBtn?.addEventListener("click", hideAuthModal);
+      authModalBackdrop?.addEventListener("click", hideAuthModal);
+
+      renderHomePage();
+      attachPageLinks();
+      updateCartUI();
+      updateAuthUI();
+    </script>
+  </body>
+</html>
